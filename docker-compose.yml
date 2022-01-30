@@ -36,6 +36,12 @@ services:
       DBUSER: "postgres"
       DBPASSWORD: "postgres"
       DBHOST: "db"
+  fileserver:
+    image: python3.6
+    ports:
+      - '8000:8000'
+    command: python -m http.server
+
 volumes:
   db:
     driver: local
