@@ -88,7 +88,8 @@ async function jobHandler(job: Job) {
   try {
     await downloadAndSave(fileUrl, job.id);
     await boss.complete(job.id);
-  } catch {
+  } catch (error) {
+    console.error("There was an error downloading the file: ", error);
     await boss.fail(job.id);
   }
 }
