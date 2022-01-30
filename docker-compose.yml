@@ -7,10 +7,16 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
       - ./postgres_setup.sql:/docker-entrypoint-initdb.d/postgres_setup.sql
+  fileserver:
+    build:
+      context: ./fileserver
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
   api:
     build:
       context: ./interfaces/api
@@ -36,13 +42,7 @@ services:
       DBUSER: "postgres"
       DBPASSWORD: "postgres"
       DBHOST: "db"
-  fileserver:
-    build:
-      context: ./fileserver
-      dockerfile: Dockerfile
-    ports:
-      - '8000:8000'
-    command: python -m http.server
+
 
 volumes:
   db:
