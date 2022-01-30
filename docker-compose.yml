@@ -37,7 +37,9 @@ services:
       DBPASSWORD: "postgres"
       DBHOST: "db"
   fileserver:
-    image: python3.6
+    build:
+      context: ./fileserver
+      dockerfile: Dockerfile
     ports:
       - '8000:8000'
     command: python -m http.server
