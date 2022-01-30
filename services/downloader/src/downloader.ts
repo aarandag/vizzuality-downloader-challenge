@@ -22,9 +22,10 @@ function readFirstChunk(
    * Sends a GET request to the specified URL and gets only the first nBytes from the response.
    * Used to read the headers.
    */
-  const request = http.get(url, async (res: IncomingMessage) => {
+  const request = http.get(url, (res: IncomingMessage) => {
     function getChunk() {
       const data = res.read(nBytes);
+      console.log("in getChunk data", data);
       callback(data);
       // Once the first chunk is read, finish the stream
       res.destroy();
@@ -50,6 +51,7 @@ async function downloadAndSave(
    */
   await readFirstChunk(fileUrl, 1000, (chunk) => {
     // Get headers
+    console.log("in readFirstChunk chunk", chunk);
     const headerFields = getFields(chunk);
 
     /* Start a stream from a http GET request to fileUrl
