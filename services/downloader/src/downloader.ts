@@ -50,9 +50,11 @@ async function downloadAndSave(
    * with columns matching the header names with the 'text' datatype, and writes the CSV
    * to Postgres in streaming.
    */
+
+  const cleanTableName = tableName.split("-").join("_"); // Replace '-' with '_'
+
   await readFirstChunk(fileUrl, 1000, (chunk) => {
     // Get headers
-    console.log("in readFirstChunk chunk", chunk);
     const headerFields = getFields(chunk);
 
     /* Start a stream from a http GET request to fileUrl
@@ -64,11 +66,11 @@ async function downloadAndSave(
       const fieldsDDL: string = headerFields
         .map((field) => `${field} text`)
         .join(", ");
-      const createTableQuery = `CREATE TABLE IF NOT EXISTS TEST2 (${fieldsDDL})`;
+      const createTableQuery = `CREATE TABLE IF NOT EXISTS ${cleanTableName} (${fieldsDDL})`;
       console.log("Executing create table query: " + createTableQuery);
       await client.query(createTableQuery);
 
-      const copyQuery = `COPY TEST2 FROM stdin WITH (format csv, HEADER true)`;
+      const copyQuery = `COPY ${cleanTableName} FROM stdin WITH (format csv, HEADER true)`;
       console.log("Executing copy table query: " + copyQuery);
       const dbStream = await client.query(copyFrom(copyQuery));
       res.on("error", client.release);
