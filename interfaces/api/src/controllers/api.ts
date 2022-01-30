@@ -14,6 +14,9 @@ export const loadApiEndpoints = (app: Application): void => {
     console.info("POST /download_file");
     const fileUrl: string = req.body.fileUrl;
     const separator: string = req.body.separator || ",";
+    // Builds the table name as the file name to download concatenated to the current timestamp
+    const tableName: string =
+      fileUrl.split("/")[-1].split(".")[0] + "_" + Date.now();
     if (!fileUrl) {
       return res.status(400).send("Missing fileUrl");
     }
@@ -24,7 +27,7 @@ export const loadApiEndpoints = (app: Application): void => {
     await boss.start();
     const queue = "download_file";
     console.info("Writing task to pgboss");
-    const jobId = await boss.send(queue, { fileUrl, separator });
+    const jobId = await boss.send(queue, { fileUrl, separator, tableName });
 
     // Return task id
     console.info("Returning task id: " + jobId);

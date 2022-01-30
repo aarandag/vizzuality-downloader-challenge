@@ -43,7 +43,8 @@ function readFirstChunk(
 
 async function downloadAndSave(
   fileUrl: string,
-  tableName: string
+  tableName: string,
+  separator: string
 ): Promise<void> {
   /*
    * Downloads a CSV file from fileUrl, creates a table with tableName in the database,
@@ -51,11 +52,9 @@ async function downloadAndSave(
    * to Postgres in streaming.
    */
 
-  const cleanTableName = tableName.split("-").join("_"); // Replace '-' with '_'
-
   await readFirstChunk(fileUrl, 1000, (chunk) => {
     // Get headers
-    const headerFields = getFields(chunk);
+    const headerFields = getFields(chunk, separator);
 
     /* Start a stream from a http GET request to fileUrl
        Then, initialize a connection to the database. Create a table with a schema based on headerFields, and then
@@ -66,11 +65,11 @@ async function downloadAndSave(
       const fieldsDDL: string = headerFields
         .map((field) => `${field} text`)
         .join(", ");
-      const createTableQuery = `CREATE TABLE IF NOT EXISTS ${cleanTableName} (${fieldsDDL})`;
+      const createTableQuery = `CREATE TABLE IF NOT EXISTS ${tableName} (${fieldsDDL})`;
       console.log("Executing create table query: " + createTableQuery);
       await client.query(createTableQuery);
 
-      const copyQuery = `COPY ${cleanTableName} FROM stdin WITH (format csv, HEADER true)`;
+      const copyQuery = `COPY ${tableName} FROM stdin WITH (format csv, HEADER true, DELIMITER '${separator}')`;
       console.log("Executing copy table query: " + copyQuery);
       const dbStream = await client.query(copyFrom(copyQuery));
       res.on("error", client.release);
@@ -88,10 +87,13 @@ async function downloadAndSave(
 async function jobHandler(job: Job) {
   /* Handler for each job that is received via pgBoss */
   console.log("Received job: " + job.id);
-  const jobData: { fileUrl?: string } = job.data;
+  const jobData: { fileUrl?: string; separator?: string; tableName?: string } =
+    job.data;
   const fileUrl: string = jobData.fileUrl!;
+  const tableName: string = jobData.tableName!;
+  const separator: string = jobData.separator || ",";
   try {
-    await downloadAndSave(fileUrl, job.id);
+    await downloadAndSave(fileUrl, tableName, separator);
     await boss.complete(job.id);
   } catch (error) {
     console.error("There was an error downloading the file: ", error);
