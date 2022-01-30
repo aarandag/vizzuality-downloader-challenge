@@ -16,7 +16,7 @@ export const loadApiEndpoints = (app: Application): void => {
     const separator: string = req.body.separator || ",";
     // Builds the table name as the file name to download concatenated to the current timestamp
     const tableName: string =
-      fileUrl.split("/")[-1].split(".")[0] + "_" + Date.now();
+      fileUrl.split("/").slice(-1)[0].split(".")[0] + "_" + Date.now();
     if (!fileUrl) {
       return res.status(400).send("Missing fileUrl");
     }
