@@ -1,0 +1,41 @@
+version: "3"
+services:
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./postgres_setup.sql:/docker-entrypoint-initdb.d/postgres_setup.sql
+  api:
+    build:
+      context: ./interfaces/api
+      dockerfile: Dockerfile
+    environment:
+      PGBOSSUSER: "pgboss"
+      PGBOSSPASSWORD: "pgboss"
+      PGBOSSHOST: "db"
+      PGBOSSPORT: "5432"
+      PGBOSSDATABASE: "db_pgboss"
+    ports:
+      - "3000:3000"
+  downloader:
+    build:
+      context: ./services/downloader
+      dockerfile: Dockerfile
+    environment:
+      PGBOSSUSER: "pgboss"
+      PGBOSSPASSWORD: "pgboss"
+      PGBOSSHOST: "db"
+      PGBOSSPORT: "5432"
+      PGBOSSDATABASE: "db_pgboss"
+      DBUSER: "postgres"
+      DBPASSWORD: "postgres"
+      DBHOST: "db"
+volumes:
+  db:
+    driver: local

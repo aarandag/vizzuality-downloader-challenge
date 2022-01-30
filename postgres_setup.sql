@@ -1,0 +1,4 @@
+CREATE DATABASE db_pgboss;
+CREATE USER pgboss WITH PASSWORD 'pgboss';
+GRANT CREATE ON DATABASE db_pgboss TO pgboss;
+CREATE EXTENSION pgcrypto;
