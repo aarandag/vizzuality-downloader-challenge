@@ -25,8 +25,9 @@ function readFirstChunk(
   const request = http.get(url, (res: IncomingMessage) => {
     function getChunk() {
       const data = res.read(nBytes);
-      console.log("in getChunk data", data);
-      callback(data);
+      if (data) {
+        callback(data);
+      }
       // Once the first chunk is read, finish the stream
       res.destroy();
     }
